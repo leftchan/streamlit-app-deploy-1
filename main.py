@@ -61,15 +61,15 @@ if not "initialized" in st.session_state:
 #col1, col2 = st.columns([1, 3])
 
 #with col1:
-    # モード表示
-    cn.display_select_mode()
+# モード表示
+cn.display_select_mode()
 
 #with col2:
-    # タイトル表示
-    cn.display_app_title()
+# タイトル表示
+cn.display_app_title()
 
-    # AIメッセージの初期表示
-    cn.display_initial_ai_message()
+# AIメッセージの初期表示
+cn.display_initial_ai_message()
 
 ############################################################
 # 5. 会話ログの表示
