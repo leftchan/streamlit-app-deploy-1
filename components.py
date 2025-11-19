@@ -33,7 +33,7 @@ def display_select_mode():
         label_visibility="collapsed"
     )
     # 区切り線を表示
-    st.sidebar.divider()
+    st.divider()
 
     # 例示を記載
     # 「社内文書検索」の機能説明
