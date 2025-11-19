@@ -105,7 +105,7 @@ if chat_message:
     # 7-2. LLMからの回答取得
     # ==========================================
     # 「st.spinner」でグルグル回っている間、表示の不具合が発生しないよう空のエリアを表示
-    res_box = st.empty()
+    # res_box = st.empty()
     # LLMによる回答生成（回答生成が完了するまでグルグル回す）
     with st.spinner(ct.SPINNER_TEXT):
         try:
