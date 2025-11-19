@@ -5,7 +5,7 @@
 ############################################################
 # ライブラリの読み込み
 ############################################################
-from langchain_community.document_loaders import PyMuPDFLoader, Docx2txtLoader, TextLoader
+from langchain_community.document_loaders import PyMuPDFLoader, Docx2txtLoader, TextLoader, JSONLoader
 from langchain_community.document_loaders.csv_loader import CSVLoader
 
 
@@ -51,7 +51,8 @@ SUPPORTED_EXTENSIONS = {
     ".pdf": PyMuPDFLoader,
     ".docx": Docx2txtLoader,
     ".csv": lambda path: CSVLoader(path, encoding="utf-8"),
-    ".txt": TextLoader
+    ".txt": TextLoader,
+    ".json": lambda path: JSONLoader(path, jq_schema=None)
 }
 WEB_URL_LOAD_TARGETS = [
     "https://generative-ai.web-camp.io/"
