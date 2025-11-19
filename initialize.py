@@ -20,6 +20,9 @@ from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import Chroma
 import constants as ct
 
+import pandas as pd
+from langchain.schema import Document as LangChainDocument # 名前衝突を避けるため別名推奨
+from langchain.document_loaders.base import BaseLoader
 
 ############################################################
 # 設定関連
@@ -27,6 +30,36 @@ import constants as ct
 # 「.env」ファイルで定義した環境変数の読み込み
 load_dotenv()
 
+############################################################
+# クラス定義（constants.pyから移動してきました）
+############################################################
+class GroupedCSVLoader(BaseLoader):
+    """
+    CSVを読み込み、「部署」ごとにデータをグループ化して読み込むためのクラス
+    """
+    def __init__(self, file_path: str):
+        self.file_path = file_path
+
+    def load(self):
+        # CSVを読み込む
+        df = pd.read_csv(self.file_path)
+        docs = []
+        
+        # 「部署」カラムでグループ化してループ処理
+        for dept_name, group_df in df.groupby("部署"):
+            content_str = f"■部署名: {dept_name}\n"
+            content_str += f"以下は{dept_name}に所属する従業員の一覧です。\n\n"
+            content_str += group_df.to_csv(index=False)
+            
+            # Documentオブジェクトを作成
+            doc = LangChainDocument(
+                page_content=content_str,
+                metadata={"source": self.file_path, "department": dept_name}
+            )
+            docs.append(doc)
+            
+        return docs
+    
 
 ############################################################
 # 関数定義
@@ -211,6 +244,13 @@ def file_load(path, docs_all):
     file_extension = os.path.splitext(path)[1]
     # ファイル名（拡張子を含む）を取得
     file_name = os.path.basename(path)
+
+    # 【重要】CSVファイルの場合は、上で定義したGroupedCSVLoaderを使う
+    if file_extension == ".csv":
+        loader = GroupedCSVLoader(path)
+        docs = loader.load()
+        docs_all.extend(docs)
+        return # CSVの処理はここで終了
 
     # 想定していたファイル形式の場合のみ読み込む
     if file_extension in ct.SUPPORTED_EXTENSIONS:
