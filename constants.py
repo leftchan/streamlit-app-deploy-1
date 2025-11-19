@@ -91,7 +91,7 @@ SUPPORTED_EXTENSIONS = {
     ".docx": Docx2txtLoader,
 #    ".csv": lambda path: CSVLoader(path, encoding="utf-8"),
     ".csv": lambda path: load_csv_grouped_by_dept(path),
-    ".txt": TextLoader,
+    ".txt": TextLoader
 #    ".json": lambda path: JSONLoader(path, jq_schema='.[] | tojson', text_content=False)
 }
 WEB_URL_LOAD_TARGETS = [
