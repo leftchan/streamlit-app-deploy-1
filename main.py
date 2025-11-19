@@ -57,14 +57,13 @@ if not "initialized" in st.session_state:
 # 4. 初期表示
 ############################################################
 
-# 画面構成の定義（2カラム表示）
-#col1, col2 = st.columns([1, 3])
+#（st.sidebarを採用したので、カラムは廃止）画面構成の定義（2カラム表示）
+## col1, col2 = st.columns([1, 3])
+## with col1:
 
-#with col1:
 # モード表示
 cn.display_select_mode()
 
-#with col2:
 # タイトル表示
 cn.display_app_title()
 
