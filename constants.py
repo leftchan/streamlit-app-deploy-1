@@ -52,7 +52,7 @@ SUPPORTED_EXTENSIONS = {
     ".docx": Docx2txtLoader,
     ".csv": lambda path: CSVLoader(path, encoding="utf-8"),
     ".txt": TextLoader,
-    ".json": lambda path: JSONLoader(path, jq_schema=None)
+    ".json": lambda path: JSONLoader(path, jq_schema='.[]')
 }
 WEB_URL_LOAD_TARGETS = [
     "https://generative-ai.web-camp.io/"
