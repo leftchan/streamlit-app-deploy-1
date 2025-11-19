@@ -9,42 +9,47 @@ from langchain_community.document_loaders import PyMuPDFLoader, Docx2txtLoader, 
 from langchain_community.document_loaders.csv_loader import CSVLoader
 import pandas as pd
 from langchain.schema import Document
+from langchain.document_loaders.base import BaseLoader
 
 # ==========================================
-# カスタムローダー関数の定義
+# カスタムローダークラスの定義
 # ==========================================
-def load_csv_grouped_by_dept(path):
+class GroupedCSVLoader(BaseLoader):
     """
-    CSVを読み込み、「部署」ごとにデータをグループ化して、
-    「1部署 = 1ドキュメント」として返す関数
+    CSVを読み込み、「部署」ごとにデータをグループ化して読み込むためのクラス
     """
-    # PandasでCSVを読み込む
-    df = pd.read_csv(path)
-    
-    docs = []
-    
-    # 「部署」カラムでグループ化してループ処理
-    # ※CSVのカラム名が「部署」であることを前提としています
-    for dept_name, group_df in df.groupby("部署"):
+    def __init__(self, file_path: str):
+        self.file_path = file_path
+
+    def load(self):
+        """
+        データを読み込んでDocumentのリストを返すメソッド
+        """
+        # PandasでCSVを読み込む
+        df = pd.read_csv(self.file_path)
         
-        # その部署に所属する社員全員のデータを文字列化（CSV形式やJSON形式の文字列にする）
-        # index=Falseで行番号を削除、to_csvやto_jsonで見やすい形式にする
-        content_str = f"■部署名: {dept_name}\n"
-        content_str += f"以下は{dept_name}に所属する従業員の一覧です。\n\n"
+        docs = []
         
-        # データフレームをテキストに変換（AIが読みやすい形式）
-        # ここではCSV形式のテキストに変換していますが、to_json(orient="records", force_ascii=False)でもOK
-        content_str += group_df.to_csv(index=False)
-        
-        # Documentオブジェクトを作成
-        # metadataに部署名を入れておくと後でフィルタリング等にも使えて便利
-        doc = Document(
-            page_content=content_str,
-            metadata={"source": path, "department": dept_name}
-        )
-        docs.append(doc)
-        
-    return docs
+        # 「部署」カラムでグループ化してループ処理
+        # ※CSVのカラム名が「部署」であることを前提としています
+        # もしカラム名が違う場合は "部署" の部分を変更してください
+        for dept_name, group_df in df.groupby("部署"):
+            
+            # その部署に所属する社員全員のデータを文字列化
+            content_str = f"■部署名: {dept_name}\n"
+            content_str += f"以下は{dept_name}に所属する従業員の一覧です。\n\n"
+            
+            # データフレームをテキストに変換
+            content_str += group_df.to_csv(index=False)
+            
+            # Documentオブジェクトを作成
+            doc = Document(
+                page_content=content_str,
+                metadata={"source": self.file_path, "department": dept_name}
+            )
+            docs.append(doc)
+            
+        return docs
 
 
 
@@ -90,7 +95,7 @@ SUPPORTED_EXTENSIONS = {
     ".pdf": PyMuPDFLoader,
     ".docx": Docx2txtLoader,
 #    ".csv": lambda path: CSVLoader(path, encoding="utf-8"),
-    ".csv": lambda path: load_csv_grouped_by_dept(path),
+    ".csv": GroupedCSVLoader,
     ".txt": TextLoader
 #    ".json": lambda path: JSONLoader(path, jq_schema='.[] | tojson', text_content=False)
 }
