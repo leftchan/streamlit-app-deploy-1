@@ -7,6 +7,45 @@
 ############################################################
 from langchain_community.document_loaders import PyMuPDFLoader, Docx2txtLoader, TextLoader, JSONLoader
 from langchain_community.document_loaders.csv_loader import CSVLoader
+import pandas as pd
+from langchain.schema import Document
+
+# ==========================================
+# カスタムローダー関数の定義
+# ==========================================
+def load_csv_grouped_by_dept(path):
+    """
+    CSVを読み込み、「部署」ごとにデータをグループ化して、
+    「1部署 = 1ドキュメント」として返す関数
+    """
+    # PandasでCSVを読み込む
+    df = pd.read_csv(path)
+    
+    docs = []
+    
+    # 「部署」カラムでグループ化してループ処理
+    # ※CSVのカラム名が「部署」であることを前提としています
+    for dept_name, group_df in df.groupby("部署"):
+        
+        # その部署に所属する社員全員のデータを文字列化（CSV形式やJSON形式の文字列にする）
+        # index=Falseで行番号を削除、to_csvやto_jsonで見やすい形式にする
+        content_str = f"■部署名: {dept_name}\n"
+        content_str += f"以下は{dept_name}に所属する従業員の一覧です。\n\n"
+        
+        # データフレームをテキストに変換（AIが読みやすい形式）
+        # ここではCSV形式のテキストに変換していますが、to_json(orient="records", force_ascii=False)でもOK
+        content_str += group_df.to_csv(index=False)
+        
+        # Documentオブジェクトを作成
+        # metadataに部署名を入れておくと後でフィルタリング等にも使えて便利
+        doc = Document(
+            page_content=content_str,
+            metadata={"source": path, "department": dept_name}
+        )
+        docs.append(doc)
+        
+    return docs
+
 
 
 ############################################################
@@ -50,9 +89,10 @@ RAG_TOP_FOLDER_PATH = "./data"
 SUPPORTED_EXTENSIONS = {
     ".pdf": PyMuPDFLoader,
     ".docx": Docx2txtLoader,
-    ".csv": lambda path: CSVLoader(path, encoding="utf-8"),
+#    ".csv": lambda path: CSVLoader(path, encoding="utf-8"),
+    ".csv": load_csv_grouped_by_dept,
     ".txt": TextLoader,
-    ".json": lambda path: JSONLoader(path, jq_schema='.[] | tojson', text_content=False)
+#    ".json": lambda path: JSONLoader(path, jq_schema='.[] | tojson', text_content=False)
 }
 WEB_URL_LOAD_TARGETS = [
     "https://generative-ai.web-camp.io/"
