@@ -56,15 +56,20 @@ if not "initialized" in st.session_state:
 ############################################################
 # 4. 初期表示
 ############################################################
-# タイトル表示
-cn.display_app_title()
 
-# モード表示
-cn.display_select_mode()
+# 画面構成の定義（2カラム表示）
+col1, col2 = st.columns([1, 3])
 
-# AIメッセージの初期表示
-cn.display_initial_ai_message()
+with col1:
+    # モード表示
+    cn.display_select_mode()
 
+with col2:
+    # タイトル表示
+    cn.display_app_title()
+
+    # AIメッセージの初期表示
+    cn.display_initial_ai_message()
 
 ############################################################
 # 5. 会話ログの表示
@@ -105,7 +110,7 @@ if chat_message:
     # 7-2. LLMからの回答取得
     # ==========================================
     # 「st.spinner」でグルグル回っている間、表示の不具合が発生しないよう空のエリアを表示
-    # res_box = st.empty()
+    res_box = st.empty()
     # LLMによる回答生成（回答生成が完了するまでグルグル回す）
     with st.spinner(ct.SPINNER_TEXT):
         try:
